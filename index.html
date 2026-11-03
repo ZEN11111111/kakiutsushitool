@@ -25,6 +25,7 @@ select,input[type=number]{border:1px solid #cbd2dc;border-radius:8px;background:
 .item{display:flex;align-items:flex-start;gap:10px;padding:10px;border-bottom:1px solid #edf0f3}
 .item.current{background:#eff6ff;border-radius:8px}.item button.text{flex:1;text-align:left;line-height:1.5}
 #currentText{font-size:25px;line-height:1.7;overflow-wrap:anywhere;white-space:pre-wrap;min-height:120px;padding:14px;background:#f3f5f8;border-radius:10px;overflow:auto}
+#currentActions{flex:0 0 auto;gap:8px}
 #status{margin-top:8px;color:#475467;font-size:13px}
 @media(max-width:600px){body{padding:12px}.card{padding:13px}h1{font-size:20px}}
 body.dual-display{height:100vh;overflow:hidden}
@@ -37,7 +38,8 @@ body.dual-display .app>.card:nth-of-type(2){grid-column:1;grid-row:3 / span 2;ma
 body.dual-display #source{flex:1;min-height:0;height:100%;max-height:none}
 body.dual-display .app>.card:nth-of-type(3){grid-column:2;grid-row:3;margin:0 0 10px;min-height:0;overflow:auto}
 body.dual-display .app>.card:nth-of-type(4){grid-column:2;grid-row:4;margin:0 0 10px;min-height:0;display:flex;flex-direction:column}
-body.dual-display #currentText{flex:1 1 180px;min-height:120px;overflow:auto}
+body.dual-display #currentText{flex:1 1 0;min-height:0;overflow:auto}
+body.dual-display .app>.card:nth-of-type(4) p{display:none}
 body.dual-display .app>footer{grid-column:1/-1;grid-row:5;padding-top:4px}
 @media(min-width:1200px){
  body{height:100vh;overflow:hidden}
@@ -50,7 +52,8 @@ body.dual-display .app>footer{grid-column:1/-1;grid-row:5;padding-top:4px}
  #source{flex:1;min-height:0;height:100%;max-height:none}
  .app>.card:nth-of-type(3){grid-column:2;grid-row:3;margin:0 0 10px;min-height:0;overflow:auto}
  .app>.card:nth-of-type(4){grid-column:2;grid-row:4;margin:0 0 10px;min-height:0;display:flex;flex-direction:column}
- #currentText{flex:1 1 180px;min-height:120px;overflow:auto}
+ #currentText{flex:1 1 0;min-height:0;overflow:auto}
+ .app>.card:nth-of-type(4) p{display:none}
  .app>footer{grid-column:1/-1;grid-row:5;padding-top:4px}
 }
 @media(min-width:1200px) and (max-height:760px){
@@ -98,7 +101,7 @@ body.dual-display .app>footer{grid-column:1/-1;grid-row:5;padding-top:4px}
  <h2>4. 現在の範囲</h2>
  <div class="muted" id="currentNum">範囲を登録してください</div>
  <div id="currentText">選択した文章がここに表示されます。</div>
- <div class="row" style="margin-top:12px">
+ <div class="row" id="currentActions" style="margin-top:12px">
   <button id="prev" disabled>← 前へ</button><button id="next" disabled>次へ →</button>
   <button class="primary" id="mark" disabled>✓ 書き写し完了</button><button id="undo" disabled>完了を取り消す</button>
  </div>
