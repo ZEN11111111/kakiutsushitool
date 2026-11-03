@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>書き写しアシスタント 5.2</title>
+<title>書き写しアシスタント 5.3</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
 :root{font-family:system-ui,"Yu Gothic UI",Meiryo,sans-serif;color:#202124;background:#f4f6f8}
@@ -71,7 +71,7 @@ body.dual-display .app>footer{grid-column:1/-1;grid-row:5;padding-top:4px}
 </head>
 <body>
 <div class="app">
-<header><div><h1>書き写しアシスタント 5.2</h1><div class="sub">原稿の好きな範囲を選択して、書き写し済みの場所に取り消し線を付けられます。</div></div><div class="row"><button id="displayMode" aria-pressed="false">デュアルディスプレイ表示</button><button id="reset">すべてリセット</button></div></header>
+<header><div><h1>書き写しアシスタント 5.3</h1><div class="sub">原稿の好きな範囲を選択して、書き写し済みの場所に取り消し線を付けられます。</div></div><div class="row"><button id="displayMode" aria-pressed="false">デュアルディスプレイ表示</button><button id="reset">すべてリセット</button></div></header>
 
 <section class="card">
  <h2>1. 原稿を入力</h2>
@@ -124,7 +124,7 @@ function makeRanges(t,mode,size){
   if(start<position)ranges.push([start,position]);
   return ranges;
  }
- const boundary=mode==='sentence'?/[。！？!?]/:/[、，,；;。！？!?]/;
+ const boundary=mode==='sentence'?/[。．.!?！？]/:/[、，,;；:：。．.!?！？]/;
  const closers=/[」』）】〉》”’\"'\s]/;
  let start=0,i=0;
  while(i<t.length){
