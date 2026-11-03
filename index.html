@@ -16,6 +16,8 @@ button:hover{background:#f0f4f9}button:disabled{opacity:.4;cursor:not-allowed}
 .primary{background:#2563eb;color:white;border-color:#2563eb}.primary:hover{background:#1d4ed8}
 .danger{color:#b42318}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.between{justify-content:space-between}
 textarea{width:100%;min-height:145px;padding:12px;border:1px solid #cbd2dc;border-radius:10px;font:16px/1.7 inherit;resize:vertical}
+select,input[type=number]{border:1px solid #cbd2dc;border-radius:8px;background:white;padding:8px;font:inherit}
+#chunkSize{width:88px}
 #source{white-space:pre-wrap;overflow-wrap:anywhere;line-height:2;font-size:19px;min-height:180px;max-height:460px;overflow:auto;border:1px solid #cbd2dc;border-radius:10px;padding:14px;outline:none;user-select:text}
 .done{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:#667085;color:#8a929e}
 .active{background:#dbeafe;border-radius:3px}
@@ -74,8 +76,9 @@ body.dual-display .app>footer{grid-column:1/-1;grid-row:5;padding-top:4px}
 <section class="card">
  <h2>1. 原稿を入力</h2>
  <textarea id="input" placeholder="ここに原稿を貼り付けてください。"></textarea>
+ <div class="row" style="margin-top:10px"><label for="splitMode">範囲の分け方</label><select id="splitMode"><option value="manual">手動で選択</option><option value="count">文字数で分ける</option><option value="sentence">句点・文末記号で分ける</option><option value="punctuation">句読点で分ける</option></select><label id="chunkSizeLabel" for="chunkSize">1範囲あたり <input id="chunkSize" type="number" min="1" max="10000" value="30"> 文字</label></div>
  <div class="row between" style="margin-top:10px"><span class="muted" id="inputCount">0文字</span><button class="primary" id="load">原稿を表示する</button></div>
- <p class="muted">原稿を表示した後、下の文章をマウスでドラッグして範囲選択してください。範囲を登録した後に原稿を変更すると、登録範囲はリセットされます。</p>
+ <p class="muted" id="splitHelp">手動選択では、原稿を表示した後に文章をドラッグして範囲登録します。自動分割を選ぶと、原稿を表示したときに範囲を作成します。</p>
 </section>
 
 <section class="card">
@@ -108,6 +111,38 @@ body.dual-display .app>footer{grid-column:1/-1;grid-row:5;padding-top:4px}
 const $=id=>document.getElementById(id);
 const input=$('input'),source=$('source');
 let blocks=[],current=-1,loadedText='',rendering=false;
+const splitMode=$('splitMode'),chunkSize=$('chunkSize');
+function makeRanges(t,mode,size){
+ const ranges=[];
+ if(mode==='count'){
+  let start=0,position=0,count=0;
+  for(const ch of t){
+   const width=ch.length;
+   if(count>=size){ranges.push([start,position]);start=position;count=0;}
+   position+=width;count++;
+  }
+  if(start<position)ranges.push([start,position]);
+  return ranges;
+ }
+ const boundary=mode==='sentence'?/[。！？!?]/:/[、，,；;。！？!?]/;
+ const closers=/[」』）】〉》”’\"'\s]/;
+ let start=0,i=0;
+ while(i<t.length){
+  const cp=t.codePointAt(i),ch=String.fromCodePoint(cp);i+=ch.length;
+  if(boundary.test(ch)){
+   while(i<t.length){const next=String.fromCodePoint(t.codePointAt(i));if(!closers.test(next))break;i+=next.length;}
+   ranges.push([start,i]);start=i;
+  }
+ }
+ if(start<t.length)ranges.push([start,t.length]);
+ return ranges;
+}
+function updateSplitOptions(){
+ const manual=splitMode.value==='manual';
+ $('chunkSizeLabel').hidden=splitMode.value!=='count';
+ $('splitHelp').textContent=manual?'原稿を表示した後に文章をドラッグして範囲登録します。':'「原稿を表示する」を押すと、選んだ方法で範囲を自動作成します。';
+}
+splitMode.addEventListener('change',updateSplitOptions);updateSplitOptions();
 const displayMode=$('displayMode');
 function setDisplayMode(on){document.body.classList.toggle('dual-display',on);displayMode.setAttribute('aria-pressed',String(on));displayMode.textContent=on?'デュアル表示を終了':'デュアルディスプレイ表示';}
 displayMode.title='別ウィンドウを開き、選択中の文章を同期して表示します。';
@@ -203,7 +238,16 @@ $('input').addEventListener('input',()=>{$('inputCount').textContent=[...input.v
 $('load').onclick=()=>{
  if(!input.value.trim()){alert('先に原稿を入力してください。');return}
  loadedText=input.value;blocks=[];current=-1;source.innerText=loadedText;
- $('status').textContent='文章をドラッグして選択し、「選択範囲を登録」を押してください。';render();
+ if(splitMode.value==='manual'){
+  $('status').textContent='文章をドラッグして選択し、「選択範囲を登録」を押してください。';
+ }else{
+  const t=getText(),size=Math.max(1,Math.min(10000,Number.parseInt(chunkSize.value,10)||30));
+  const ranges=makeRanges(t,splitMode.value,size);
+  blocks=ranges.map(([start,end])=>({start,end,value:t.slice(start,end),done:false}));
+  current=blocks.length?0:-1;
+  $('status').textContent=`自動で${blocks.length}範囲に分けました。書き写したら「書き写し完了」を押してください。`;
+ }
+ render();
 };
 $('register').onclick=()=>{
  const s=selectionOffsets();if(!s||s.end<=s.start){$('status').textContent='原稿内の文字をマウスでドラッグして選択してください。';return}
